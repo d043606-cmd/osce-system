@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>臨床技能教室 · 教具推薦系統</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+:root{--teal:#0d9488;--teal-dark:#0f766e;--teal-light:#ccfbf1;--teal-xlight:#f0fdfa;--navy:#0f172a;--slate:#334155;--muted:#64748b;--border:#e2e8f0;--bg:#f8fafc;--white:#fff;--red:#ef4444;--red-light:#fee2e2;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--navy);min-height:100vh;}
+header{background:linear-gradient(135deg,#0f766e 0%,#0d9488 60%,#14b8a6 100%);color:#fff;padding:24px 20px 20px;text-align:center;position:relative;overflow:hidden;}
+.header-icon{font-size:2.4rem;margin-bottom:6px;display:block;}
+header h1{font-size:1.3rem;font-weight:700;letter-spacing:.03em;margin-bottom:4px;}
+header p{font-size:.78rem;opacity:.85;}
+.badge-row{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap;}
+.badge{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:500;}
+main{max-width:720px;margin:0 auto;padding:18px 16px 40px;}
+.search-card{background:var(--white);border-radius:16px;padding:20px;box-shadow:0 2px 16px rgba(0,0,0,.08);margin-bottom:14px;}
+.search-label{font-size:.85rem;font-weight:600;color:var(--teal-dark);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.input-row{display:flex;gap:8px;align-items:flex-end;}
+textarea{flex:1;border:2px solid var(--border);border-radius:12px;padding:12px 14px;font-size:.95rem;font-family:'Noto Sans TC',sans-serif;color:var(--navy);resize:none;min-height:64px;transition:border-color .2s;outline:none;line-height:1.5;}
+textarea:focus{border-color:var(--teal);}
+textarea::placeholder{color:#94a3b8;}
+.btn-send{background:var(--teal);color:#fff;border:none;border-radius:12px;width:52px;height:52px;font-size:1.3rem;cursor:pointer;flex-shrink:0;transition:background .2s,transform .1s;display:flex;align-items:center;justify-content:center;}
+.btn-send:hover{background:var(--teal-dark);}
+.btn-send:active{transform:scale(.95);}
+.voice-row{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
+btn-voice{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;border:2px solid var(--teal);background:#fff;color:var(--teal);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Noto Sans TC',sans-serif;}
+.btn-voice{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;border:2px solid var(--teal);background:#fff;color:var(--teal);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-voice:hover{background:var(--teal-xlight);}
+.btn-voice.recording{background:var(--red-light);border-color:var(--red);color:var(--red);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+.voice-status{font-size:.75rem;color:var(--muted);}
+.voice-status.err{color:var(--red);}
+.quick-label{font-size:.75rem;color:var(--muted);margin-bottom:8px;margin-top:14px;}
+.tags{display:flex;flex-wrap:wrap;gap:7px;}
+.tag{background:var(--teal-xlight);color:var(--teal-dark);border:1px solid #99f6e4;border-radius:20px;padding:5px 13px;font-size:.78rem;cursor:pointer;transition:all .15s;font-weight:500;}
+.tag:hover{background:var(--teal-light);border-color:var(--teal);}
+.results-box{display:none;}
+.summary-box{background:linear-gradient(135deg,var(--teal-xlight),#ecfdf5);border:1px solid #99f6e4;border-radius:16px;padding:18px 20px;margin-bottom:14px;font-size:.9rem;line-height:1.7;color:var(--slate);}
+.summary-header{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--teal-dark);font-size:.88rem;margin-bottom:6px;}
+.section-title{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.card-grid{display:grid;gap:10px;margin-bottom:14px;}
+.tool-card{background:var(--white);border-radius:14px;padding:16px;box-shadow:0 1px 8px rgba(0,0,0,.07);border-left:4px solid var(--teal);transition:transform .15s,box-shadow .15s;}
+.tool-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.12);}
+.tool-card.secondary{border-left-color:#94a3b8;}
+.tool-card.r1{border-left-color:#0d9488;}
+.tool-card.r2{border-left-color:#2563eb;}
+.tool-card.r3{border-left-color:#7c3aed;}
+.room-badge{display:inline-block;border-radius:10px;padding:2px 9px;font-size:.7rem;font-weight:600;margin-bottom:6px;}
+.room-badge.r1{background:#f0fdfa;color:#0f766e;border:1px solid #99f6e4;}
+.room-badge.r2{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+.room-badge.r3{background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;}
+.tool-name{font-weight:700;font-size:.95rem;color:var(--navy);margin-bottom:4px;}
+.tool-desc{font-size:.82rem;color:var(--muted);line-height:1.5;margin-bottom:6px;}
+.tool-note{font-size:.78rem;color:#92400e;background:#fef3c7;border-radius:8px;padding:6px 10px;margin-bottom:8px;line-height:1.5;}
+.tool-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.tool-tag{background:var(--teal-xlight);color:var(--teal-dark);border-radius:10px;padding:2px 9px;font-size:.72rem;font-weight:500;}
+.tool-card.secondary .tool-tag{background:#f1f5f9;color:var(--muted);}
+.btn-borrow{display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--teal);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:600;cursor:pointer;text-decoration:none;transition:background .2s;}
+.btn-borrow:hover{background:var(--teal-dark);}
+.empty-state{background:var(--white);border-radius:16px;padding:32px 20px;text-align:center;color:var(--muted);font-size:.9rem;box-shadow:0 1px 8px rgba(0,0,0,.07);margin-bottom:14px;line-height:1.8;}
+.empty-icon{font-size:2rem;margin-bottom:8px;}
+.btn-reset{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:.78rem;color:var(--muted);cursor:pointer;transition:all .15s;margin-top:4px;}
+.btn-reset:hover{border-color:var(--red);color:var(--red);}
+.footer-notice{background:#fff;border-radius:14px;padding:14px 18px;font-size:.78rem;color:var(--muted);line-height:1.7;box-shadow:0 1px 6px rgba(0,0,0,.06);margin-top:10px;}
+.footer-notice h4{color:var(--slate);font-size:.82rem;margin-bottom:4px;}
+</style>
+</head>
+<body>
+<header>
+<span class="header-icon">🏥</span>
+<h1>臨床技能教室 · 教具推薦</h1>
+<p>臺北榮民總醫院員山分院</p>
+<div class="badge-row">
+<span class="badge">🔍 智慧關鍵字搜尋</span>
+<span class="badge">🎤 語音輸入</span>
+<span class="badge">🏠 三間練習室</span>
+</div>
+</header>
+<main>
+<div class="search-card">
+<div class="search-label">💬 請描述您的教學需求或訓練主題</div>
+<div class="input-row">
+<textarea id="queryInput" placeholder="例如：急救CPR訓練、靜脈注射、導尿技術、ICU照護…" rows="2"></textarea>
+<button class="btn-send" onclick="doSearch()">🔍</button>
+</div>
+<div class="voice-row">
+<button class="btn-voice" id="voiceBtn" onclick="toggleVoice()">🎤 語音輸入</button>
+<span class="voice-status" id="voiceStatus">點擊後開始說話（需Chrome瀏覽器）</span>
+</div>
+<div class="quick-label">💡 快速選擇常見訓練主題：</div>
+<div class="tags" id="quickTags"></div>
+</div>
+<div class="results-box" id="resultsBox"></div>
+<div class="footer-notice">
+<h4>📋 借用規定提醒</h4>
+借用前一週請填寫「臨床技能教室使用登記表」，需經管理者確認點交後方可借用。<br>
+借用完畢請確實復原器材並清潔，嚴禁使用有色液體於教具上。<br>
+📞 分機：<strong>6301</strong> &nbsp;|&nbsp; 📧 <strong>ysvh3657@mail.ysvh.gov.tw</strong><br>
+開放時間：週一～週五 08:00–12:00、13:00–17:00
+</div>
+</main>
+<script>
+const ROOMS={r1:{name:"第一練習室",desc:"急救教學訓練"},r2:{name:"第二練習室",desc:"臨床標準技術訓練"},r3:{name:"會議室",desc:"視訊/跑台訓練"}};
+
+const TOOLS=[
+  // ─── 第一練習室（急救） ───
+  {id:1,room:"r1",name:"急救車設備",emoji:"🚑",
+   desc:"模擬急救推車，含急救所需器械與藥物模型，適合急救流程訓練與ACLS情境演練。",note:"",
+   tags:["急救","ACLS","急救車","緊急處置"],
+   keys:["急救","acls","急救車","緊急","復甦","救護","急診"]},
+  {id:2,room:"r1",name:"電擊器",emoji:"⚡",
+   desc:"AED/去顫器操作練習設備，用於心室纖維顫動急救情境訓練，含操作步驟實作。",note:"",
+   tags:["AED","電擊","去顫","急救"],
+   keys:["aed","電擊","去顫","急救","心律","顫動","除顫"]},
+  {id:3,room:"r1",name:"半身CPR暨插管訓練急救假人",emoji:"🫀",
+   desc:"結合CPR按壓與氣管插管的半身訓練模型，一機雙用，可同時練習心肺復甦與插管技術。",note:"",
+   tags:["CPR","插管","急救","BLS","ACLS"],
+   keys:["cpr","插管","急救","心肺復甦","bls","acls","按壓","假人","心外按摩"]},
+  {id:4,room:"r1",name:"心外按摩練習模型－一般型（半身）",emoji:"🫁",
+   desc:"半身型CPR練習模型，輕便易搬運，適合小班教學與個別練習，基本按壓技術訓練。",note:"",
+   tags:["CPR","心外按摩","BLS","急救"],
+   keys:["cpr","心外按摩","急救","心肺復甦","bls","按壓"]},
+  {id:5,room:"r1",name:"心外按摩練習模型－內建燈號顯示（半身）",emoji:"🚦",
+   desc:"內建即時燈號指示CPR品質，綠燈代表按壓正確，適合初學者直覺式學習。",note:"",
+   tags:["CPR","燈號回饋","初學者","BLS"],
+   keys:["cpr","心外按摩","急救","心肺復甦","bls","燈號","按壓","初學"]},
+  {id:6,room:"r1",name:"異物哽塞練習模型",emoji:"😮",
+   desc:"海姆立克急救法及異物哽塞處理練習用模型，適合急救教育與照護人員訓練。",note:"",
+   tags:["哽塞","海姆立克","異物","急救"],
+   keys:["哽塞","海姆立克","異物","急救","噎到","梗塞","窒息","嬰兒急救","哽到"]},
+
+  // ─── 第二練習室（臨床技術） ───
+  {id:7,room:"r2",name:"多功能假病人",emoji:"🤕",
+   desc:"全功能模擬病人模型，可用於多種護理技術實作，包含導尿、傷口、各類管路護理等情境。",note:"",
+   tags:["多功能","護理技術","全方位"],
+   keys:["假病人","護理","多功能","管路","傷口","評估","技術","綜合","導尿","糖尿病","身體評估"]},
+  {id:8,room:"r2",name:"心外按摩練習模型－藍芽APP連線回饋（半身）",emoji:"📱",
+   desc:"藍芽連線版CPR模型，搭配APP即時顯示按壓深度與頻率回饋，適合進階技術評估。",note:"",
+   tags:["CPR","藍芽APP","品質評估","OSCE"],
+   keys:["cpr","心外按摩","急救","藍芽","app","osce","品質","評估","心肺復甦","按壓"]},
+  {id:9,room:"r2",name:"心外按摩練習模型－內建燈號顯示（半身）",emoji:"🚦",
+   desc:"內建即時燈號指示CPR品質，適合直覺式學習。",note:"",
+   tags:["CPR","燈號回饋","BLS"],
+   keys:["cpr","心外按摩","急救","燈號","按壓","心肺復甦","bls"]},
+  {id:10,room:"r2",name:"異物哽塞練習模型",emoji:"😮",
+   desc:"海姆立克急救法及異物哽塞處理練習用模型。",note:"",
+   tags:["哽塞","海姆立克","急救"],
+   keys:["哽塞","海姆立克","異物","急救","噎到","窒息"]},
+  {id:11,room:"r2",name:"靜脈注射訓練手臂模型",emoji:"💉",
+   desc:"逼真的手臂靜脈模型，供靜脈穿刺、輸液注射練習，血管觸診感受擬真。",note:"",
+   tags:["靜脈注射","IV","穿刺","輸液"],
+   keys:["靜脈","注射","iv","點滴","輸液","穿刺","打針","手臂","採血","抽血","靜脈注射"]},
+  {id:12,room:"r2",name:"靜脈注射手臂",emoji:"💉",
+   desc:"靜脈注射練習手臂，提供靜脈穿刺技術實作，適合反覆練習提升穿刺準確性。",note:"",
+   tags:["靜脈注射","IV","穿刺"],
+   keys:["靜脈","注射","iv","點滴","穿刺","打針","手臂","採血","抽血"]},
+  {id:13,room:"r2",name:"靜脈注射練習墊",emoji:"🩹",
+   desc:"穿刺技術練習墊，模擬皮膚觸感，供靜脈注射與針頭插入角度練習。",note:"",
+   tags:["靜脈注射","穿刺","練習墊"],
+   keys:["靜脈","注射","穿刺","打針","練習墊","iv"]},
+  {id:14,room:"r2",name:"男性導尿模型",emoji:"🔵",
+   desc:"男性泌尿解剖模型，供導尿管置入技術練習，含尿道構造模擬，可重複操作。",note:"",
+   tags:["導尿","男性","泌尿","尿管"],
+   keys:["導尿","泌尿","尿管","尿道","男性","foley","留置","膀胱","導管","尿路"]},
+  {id:15,room:"r2",name:"女性導尿模型",emoji:"🔴",
+   desc:"女性泌尿解剖模型，供導尿管置入技術練習，清晰呈現解剖構造，適合教學示範。",note:"",
+   tags:["導尿","女性","泌尿","尿管"],
+   keys:["導尿","泌尿","尿管","尿道","女性","foley","留置","膀胱","導管","尿路"]},
+  {id:16,room:"r2",name:"透明女性導尿模型",emoji:"🔍",
+   desc:"透明設計讓操作者清楚觀察導管置入路徑，特別適合教學演示與學員自我確認。",note:"",
+   tags:["導尿","透明","女性","教學示範"],
+   keys:["導尿","泌尿","尿管","女性","透明","foley","教學","示範","解剖"]},
+
+  // ─── 會議室 ───
+  {id:17,room:"r3",name:"困難氣道處理訓練模型",emoji:"😤",
+   desc:"模擬困難插管情境，適合進階氣道管理訓練，包含喉頭位置異常等挑戰性情境。",note:"",
+   tags:["氣道管理","困難插管","進階","ACLS"],
+   keys:["氣道","插管","困難","喉頭","氣管","acls","進階","麻醉","icu","插管管理"]},
+  {id:18,room:"r3",name:"插管安妮",emoji:"🫁",
+   desc:"氣管插管練習用假人，供喉頭鏡操作與氣管導管置入練習，氣道解剖還原度高。",note:"",
+   tags:["插管","氣管","喉頭鏡","氣道管理"],
+   keys:["插管","氣管","喉頭鏡","氣道","acls","icu","急救","插管安妮","插管管理"]},
+  {id:19,room:"r3",name:"多功能CPR練習球",emoji:"⚽",
+   desc:"攜帶方便的CPR手感練習球，可供大量人員快速練習按壓手感與力道，適合集體訓練。",note:"",
+   tags:["CPR","集體訓練","便攜","社區"],
+   keys:["cpr","按壓","急救","集體","大班","練習球","心肺復甦","社區","社區急救"]},
+  {id:20,room:"r3",name:"褥瘡清理與敷藥訓練模型",emoji:"🩹",
+   desc:"模擬不同期別壓傷(褥瘡)的護理教具，供傷口評估、清創及敷料更換技術訓練。",note:"",
+   tags:["褥瘡","壓傷","傷口照護","敷藥"],
+   keys:["褥瘡","壓傷","傷口","敷藥","換藥","清創","壓力性損傷","長照","傷口護理","傷口照護"]},
+  {id:21,room:"r3",name:"氣胸訓練模型",emoji:"🫀",
+   desc:"氣胸情境模擬模型，供胸腔引流、緊急減壓等處置技術訓練，適合外傷急救課程。",
+   note:"模擬真實男性上半身軀幹解剖結構；兩邊腋下中線及鎖骨中央可作減壓練習；膨脹氣囊，插針減壓時可發出出氣聲。",
+   tags:["氣胸","胸腔引流","緊急減壓","急救"],
+   keys:["氣胸","胸腔","引流","減壓","外傷","急症","acls","胸腔穿刺","張力性氣胸"]},
+  {id:22,room:"r3",name:"下肢穿刺模擬訓練模型",emoji:"🦵",
+   desc:"下肢動脈導管穿刺專用模型，可練習解剖功能位置觸診及動脈導管穿刺技術。",
+   note:"解剖功能位置觸診，包括恥骨、鼠蹊韌帶、前上側髂骨棘；具自動動脈血管幫浦裝置；可練習動脈導管穿刺技術。",
+   tags:["動脈穿刺","下肢","動脈導管","ICU"],
+   keys:["下肢","股動脈","動脈","穿刺","icu","動脈導管","鼠蹊","恥骨","髂骨","動脈穿刺","加護","動脈血管"]},
+  {id:23,room:"r3",name:"半身中央靜脈導管插管訓練",emoji:"🔧",
+   desc:"中央靜脈導管(CVC/Port-A/PICC)置入訓練模型，模擬多種中央靜脈管路的照護與操作。",
+   note:"為成人半身軀幹及手臂模型，可練習CVC、Port-A和PICC導管之照護、導管移除和傷口照護技術、胸腔有植入型人工血管(Port-A)、右前臂有預先設置一個靜脈留置導管、具一個雙頭週邊靜脈置入中央導管、預留有植入式中央及周邊靜脈接管線。",
+   tags:["中央靜脈","CVC","Port-A","PICC","ICU"],
+   keys:["中央靜脈","cvp","cvc","頸靜脈","鎖骨","icu","加護病房","進階","port-a","picc","中央靜脈注射","人工血管"]},
+  {id:24,room:"r3",name:"婦科訓練模型",emoji:"🩺",
+   desc:"婦科骨盆腔檢查訓練模型，供子宮頸抹片採集、陰道鏡操作及內診技術練習。",note:"",
+   tags:["婦科","抹片","內診","骨盆"],
+   keys:["婦科","抹片","內診","骨盆","子宮頸","陰道鏡","婦女","婦產","婦科教學"]},
+  {id:25,room:"r3",name:"乳房自我檢查模型",emoji:"🎀",
+   desc:"乳房觸診訓練模型，內含不同大小、位置的硬塊模擬，供乳房自我檢查衛教教學。",note:"",
+   tags:["乳房","自我檢查","觸診","衛教"],
+   keys:["乳房","乳癌","自我檢查","觸診","衛教","健康促進","社區","乳房檢查"]},
+  {id:26,room:"r3",name:"泌尿科攝護腺檢查模型",emoji:"🔵",
+   desc:"攝護腺直腸指診訓練模型，供泌尿科相關身體評估技術練習，含正常及異常觸感模擬。",note:"",
+   tags:["攝護腺","泌尿科","指診","身體評估"],
+   keys:["攝護腺","泌尿","指診","男性","直腸","前列腺","身體評估","泌尿科"]},
+  {id:27,room:"r3",name:"全身骨骼模型",emoji:"💀",
+   desc:"全尺寸人體骨骼模型，供解剖學教學、骨骼辨識及骨科護理相關課程使用。",
+   note:"和人體骨骼標準型相同，在右側用色彩表示肌肉止端（藍色）和起源（紅色）。",
+   tags:["骨骼","解剖","骨科","肌肉標示"],
+   keys:["骨骼","解剖","骨科","骨頭","人體","構造","解剖學","肌肉","骨骼模型"]},
+  {id:28,room:"r3",name:"迷你男女人體模型",emoji:"🧬",
+   desc:"縮小版男女人體解剖模型，適合人體構造解說、系統性教學及衛教說明使用。",note:"",
+   tags:["人體","解剖","衛教","身體構造"],
+   keys:["人體","解剖","構造","衛教","模型","身體","系統","人體模型","解剖教學","社區"]},
+  {id:29,room:"r3",name:"心臟模型",emoji:"❤️",
+   desc:"放大版心臟解剖模型，可拆解觀察各腔室、瓣膜及血管構造，適合心臟疾病教學。",note:"",
+   tags:["心臟","解剖","心血管","瓣膜"],
+   keys:["心臟","心血管","瓣膜","解剖","心肌","冠狀動脈","心臟病","心衰","解剖教學"]},
+  {id:30,room:"r3",name:"數粒機",emoji:"💊",
+   desc:"藥事教學用數粒機，供藥物調配計數練習，適合藥事人員及護理師用藥管理訓練。",
+   note:"可以對片劑、膠囊、軟膠囊、丸劑、糖衣片等固體製劑或固體顆粒進行計數裝瓶。",
+   tags:["藥事","數藥","用藥管理","計數"],
+   keys:["藥事","數藥","藥物","用藥","調配","藥師","計數","給藥","數粒","膠囊","片劑"]},
+  {id:31,room:"r3",name:"大型牙齒模型",emoji:"🦷",
+   desc:"放大版牙齒與口腔模型，清晰呈現牙齒構造，適合口腔衛生教學及口腔護理訓練。",note:"",
+   tags:["牙齒","口腔","口腔衛生","口腔護理"],
+   keys:["牙齒","口腔","口腔衛生","刷牙","牙科","口腔護理","口腔照護","社區衛教"]},
+  {id:32,room:"r3",name:"半身靜脈注射模型",emoji:"💉",
+   desc:"半身靜脈注射訓練模型，提供較完整的上半身靜脈分布，適合中央靜脈導管置入技術練習。",note:"",
+   tags:["中央靜脈","靜脈注射","半身","IV"],
+   keys:["靜脈","注射","iv","點滴","穿刺","打針","採血","抽血","半身","中央靜脈","中央靜脈注射"]},
+  {id:33,room:"r3",name:"腰椎穿刺模型",emoji:"🔩",
+   desc:"腰椎穿刺(脊髓腔穿刺)訓練模型，模擬脊椎解剖構造，供穿刺技術與步驟練習。",
+   note:"可練習注射局部麻醉劑、硬膜外腔與/或蛛網膜下腔穿刺、導管穿刺。",
+   tags:["腰椎穿刺","脊髓","硬膜外","蛛網膜"],
+   keys:["腰椎","脊髓","脊椎","穿刺","腦脊液","神經科","腰穿","硬膜外","蛛網膜","腰椎穿刺","麻醉"]},
+  {id:34,room:"r3",name:"腹部扣診與腹腔穿刺模型",emoji:"🫃",
+   desc:"腹部評估訓練模型，可練習腹部扣診、觸診技術及腹腔穿刺操作步驟。",note:"",
+   tags:["腹部評估","腹腔穿刺","扣診","觸診"],
+   keys:["腹部","扣診","觸診","腹腔","穿刺","腹水","內科","身體評估","腹腔穿刺"]},
+  {id:35,room:"r3",name:"肌肉注射技術標準盒",emoji:"💉",
+   desc:"肌肉注射(IM)完整技術訓練套組，含標準操作步驟、相關耗材。",note:"",
+   tags:["肌肉注射","IM","注射技術"],
+   keys:["肌肉注射","im","打針","注射","臀部","肌肉","osce","技術","肌注"]},
+  {id:36,room:"r3",name:"胰島素皮下注射技術標準盒",emoji:"🩸",
+   desc:"胰島素注射完整訓練套組，含注射部位訓練、劑量計算說明，適合糖尿病護理教學。",note:"",
+   tags:["胰島素","皮下注射","糖尿病","慢性病"],
+   keys:["胰島素","皮下注射","糖尿病","血糖","注射","dm","insulin","慢性病","糖尿病護理"]},
+  {id:37,room:"r3",name:"鼻胃管灌食及護理技術標準盤",emoji:"🫗",
+   desc:"鼻胃管置入與灌食護理完整套組，含管路固定、灌食操作及注意事項訓練材料。",note:"",
+   tags:["鼻胃管","NG管","灌食","管路護理"],
+   keys:["鼻胃管","ng管","ng","灌食","管路","鼻腸管","管灌","長照","吞嚥","鼻胃管護理"]},
+  {id:38,room:"r3",name:"導尿護理技術標準盤",emoji:"🔴",
+   desc:"導尿完整護理套組，含無菌技術、導管置入步驟及尿袋管理訓練材料。",note:"",
+   tags:["導尿","尿管","無菌技術","泌尿護理"],
+   keys:["導尿","泌尿","尿管","尿道","foley","留置","膀胱","無菌","導尿護理"]},
+  {id:39,room:"r3",name:"靜脈注射技術標準盤",emoji:"💉",
+   desc:"靜脈注射完整護理套組，含穿刺技術、管路固定、輸液調速等標準操作材料。",note:"",
+   tags:["靜脈注射","IV","輸液","標準操作"],
+   keys:["靜脈","注射","iv","點滴","輸液","穿刺","打針","osce","技術標準","靜脈注射"]},
+  {id:40,room:"r3",name:"靜脈採血技術標準盒",emoji:"🩸",
+   desc:"靜脈採血完整訓練套組，含空針、酒精棉片、棉棒、抽血試管等標準操作材料。",
+   note:"靜脈採血完整護理套組，含空針、酒精棉片、棉棒、抽血試管等標準操作材料。",
+   tags:["採血","抽血","靜脈採血","血液檢體"],
+   keys:["採血","抽血","靜脈採血","血液","檢體","試管","osce","技術","靜脈採血","採血技術"]},
+  {id:41,room:"r3",name:"CVP照護技術標準盤",emoji:"🔧",
+   desc:"中央靜脈壓(CVP)照護完整套組，含CVP測量、管路換藥等照護技術訓練材料。",note:"",
+   tags:["CVP","中央靜脈","ICU","照護"],
+   keys:["cvp","中央靜脈","icu","加護病房","進階護理","中心靜脈","中央靜脈注射"]},
+  {id:42,room:"r3",name:"抽痰技術標準盤",emoji:"😷",
+   desc:"抽痰護理完整套組，含密閉式/開放式抽痰技術、氣道護理等操作標準材料。",note:"",
+   tags:["抽痰","氣道護理","呼吸道","ICU"],
+   keys:["抽痰","氣道","呼吸道","痰","icu","加護","呼吸護理","氣切","插管後","抽痰技術"]},
+  {id:43,room:"r3",name:"雙向聽診器",emoji:"🩺",
+   desc:"雙向聽診器可供師生同步聽診，教師與學員同時聆聽同一部位聲音，適合聽診教學。",note:"",
+   tags:["聽診器","聽診","身體評估","雙向"],
+   keys:["聽診","心音","呼吸音","腸蠕動","評估","身體評估","聽診器","雙向"]},
+  {id:44,room:"r3",name:"24吋嬰兒模型",emoji:"👶",
+   desc:"嬰兒訓練模型，供新生兒護理技術練習，包含換尿布、洗澡、餵食及嬰兒急救訓練。",note:"",
+   tags:["嬰兒","新生兒","兒科護理","嬰兒急救"],
+   keys:["嬰兒","新生兒","兒科","換尿布","洗澡","餵食","嬰兒急救","哺乳","新生兒護理","嬰兒護理"]},
+  {id:47,room:"r3",name:"專業教學麥克風-擴音機",emoji:"🎤",
+   desc:"教學用擴音麥克風設備，提升教室講課音量與清晰度，適合大班教學或示範課程使用。",note:"",
+   tags:["麥克風","擴音機","教學設備","擴音"],
+   keys:["麥克風","擴音","擴音機","教學麥克風","專業教學","音響","講課","大班教學","示範"]},
+  {id:45,room:"r1",name:"AED訓練器",emoji:"🔋",
+   desc:"具備電擊模擬功能的AED訓練設備，預設10種突發性心臟停止模擬訓練情境，AI全彩螢幕顯示，動畫生動教學，強化學習者的臨場反應。",
+   note:"具備電擊模擬功能，使學習者熟悉AED的操作要領，預設10種突發性心臟停止模擬訓練情境，強化學習者的臨場反應，AI全彩螢幕顯示，動畫生動教學，提升學習者急救訓練的印象。",
+   tags:["AED","電擊模擬","急救訓練","心臟停止"],
+   keys:["aed","電擊","去顫","急救","心臟停止","心律","顫動","除顫","aed訓練","訓練器"]},
+  {id:46,room:"r2",name:"電動靜脈注射手臂模型",emoji:"🦾",
+   desc:"可練習靜脈注射、點滴輸液、抽血、使用真空採血管等技術，模型具血管隆起功能，模擬綁上止血帶後靜脈血管隆起，提供真實採血體驗。",
+   note:"可練習靜脈注射、點滴輸液、抽血、使用真空採血管等技術，模型具血管隆起功能，模擬綁上止血帶後，限制靜脈血液回流，靜脈血管隆起，提供真實採血體驗。",
+   tags:["靜脈注射","採血","電動","止血帶","真空採血管"],
+   keys:["電動","靜脈","注射","採血","抽血","止血帶","真空採血","iv","點滴","輸液","靜脈注射","電動手臂"]},
+];
+
+
+// 依照文件定義的搜尋分類對應教具ID（完全依據文件內容排序）
+const SEARCH_MAP={
+  // 急救/CPR訓練：急救車、電擊器、AED訓練器、半身假人、心外按摩×3、異物哽塞、CPR球
+  "急救/CPR訓練":     {primary:[1,2,45,3,4,5,8,6,19],secondary:[]},
+  // 靜脈注射/採血：靜脈注射訓練手臂、靜脈注射手臂、電動靜脈、練習墊、標準盤、採血盒
+  "靜脈注射/採血":    {primary:[11,12,46,13,39,40],secondary:[]},
+  // 中央靜脈注射：半身中央靜脈插管、CVP照護（兩組對應）
+  "中央靜脈注射":     {primary:[23,41,32],secondary:[]},
+  // 動脈導管穿刺技術
+  "動脈導管穿刺技術": {primary:[22],secondary:[]},
+  // 導尿技術：多功能假病人、男性導尿、女性導尿、透明女性導尿、導尿標準盤
+  "導尿技術":         {primary:[7,14,15,16,38],secondary:[]},
+  // 插管/氣道管理：半身假人、困難氣道、插管安妮、抽痰標準盤
+  "插管/氣道管理":    {primary:[3,17,18,42],secondary:[]},
+  // 氣胸訓練
+  "氣胸訓練":         {primary:[21],secondary:[]},
+  // 傷口/褥瘡照護：多功能假病人、褥瘡模型
+  "傷口/褥瘡照護":    {primary:[7,20],secondary:[]},
+  // 婦科/泌尿教學：多功能假病人、導尿系列、導尿標準盤、婦科、乳房、攝護腺
+  "婦科/泌尿教學":    {primary:[7,14,15,16,38,24,25,26],secondary:[]},
+  // 解剖教學：透明女性導尿、骨骼、迷你人體、心臟
+  "解剖教學":         {primary:[16,27,28,29],secondary:[]},
+  // 糖尿病護理：多功能假病人、胰島素注射
+  "糖尿病護理":       {primary:[7,36],secondary:[]},
+  // ICU/加護病房：依文件順序
+  "ICU/加護病房":     {primary:[3,22,23,32,41,42,17,18,21],secondary:[]},
+  // 嬰兒護理
+  "嬰兒護理":         {primary:[44],secondary:[]},
+  // 身體評估：多功能假病人、雙向聽診器、攝護腺、迷你人體、腹部扣診、骨骼
+  "身體評估":         {primary:[7,43,26,28,34,27],secondary:[]},
+  // 社區衛教：CPR球、乳房、迷你人體、大型牙齒
+  "社區衛教":         {primary:[19,25,28,31],secondary:[]},
+  // 腰椎穿刺
+  "腰椎穿刺":         {primary:[33],secondary:[]},
+  // 數粒機（獨立搜尋）
+  "數粒機":           {primary:[30],secondary:[]},
+  // 用藥管理（新增）：數粒機、胰島素皮下注射、肌肉注射、鼻胃管
+  "用藥管理":         {primary:[30,36,35,37],secondary:[]},
+};
+
+
+const QUICK_TAGS=[
+  "急救/CPR訓練","靜脈注射/採血","中央靜脈注射","動脈導管穿刺技術",
+  "導尿技術","插管/氣道管理","氣胸訓練","傷口/褥瘡照護",
+  "婦科/泌尿教學","解剖教學","糖尿病護理","ICU/加護病房",
+  "嬰兒護理","身體評估","社區衛教","腰椎穿刺","用藥管理"
+];
+const FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform";
+// ── 使用行為追蹤設定 ──
+// 部署 Apps Script 為 Web App 後，將網址貼在下方
+const TRACK_URL = "https://script.google.com/macros/s/AKfycbycap6xgVCw-Q-p1_-SSglaqt0n6fMWan2MhQWLyXE78iIV8iYGXe2eba5KniJtkjq_tg/exec"; // Apps Script Web App
+function track(action, label) {
+  if (!TRACK_URL) return; // 未設定則略過
+  try {
+    fetch(TRACK_URL + "?action=" + encodeURIComponent(action) + "&label=" + encodeURIComponent(label||""), {
+      method:"GET", mode:"no-cors"
+    });
+  } catch(e) {}
+}
+// 教具預填借用表單網址（entry.1274085700，名稱完全對應表單選項，已依截圖核對）
+const PREFILL_URLS = {
+  1: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E6%80%A5%E6%95%91%E8%BB%8A%E8%A8%AD%E5%82%99",
+  2: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E9%9B%BB%E6%93%8A%E5%99%A8",
+  3: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%8D%8A%E8%BA%ABCPR%E6%9A%A8%E6%8F%92%E7%AE%A1%E8%A8%93%E7%B7%B4%E6%80%A5%E6%95%91%E5%81%87%E4%BA%BA",
+  4: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%BF%83%E5%A4%96%E6%8C%89%E6%91%A9%E7%B7%B4%E7%BF%92%E6%A8%A1%E5%9E%8B%E4%B8%80%E8%88%AC%E5%9E%8B%EF%BC%88%E5%8D%8A%E8%BA%AB%EF%BC%89",
+  5: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%BF%83%E5%A4%96%E6%8C%89%E6%91%A9%E7%B7%B4%E7%BF%92%E6%A8%A1%E5%9E%8B-%E5%85%A7%E5%BB%BA%E7%87%88%E8%99%9F%E9%A1%AF%E7%A4%BA%EF%BC%88%E5%8D%8A%E8%BA%AB%EF%BC%89",
+  6: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E7%95%B0%E7%89%A9%E5%93%BD%E5%A1%9E%E7%B7%B4%E7%BF%92%E6%A8%A1%E5%9E%8B",
+  7: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%A4%9A%E5%8A%9F%E8%83%BD%E5%81%87%E7%97%85%E4%BA%BA",
+  8: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%BF%83%E5%A4%96%E6%8C%89%E6%91%A9%E7%B7%B4%E7%BF%92%E6%A8%A1%E5%9E%8B-%E8%97%8D%E8%8A%BDAPP%E9%80%A3%E7%B7%9A%E5%9B%9E%E9%A5%8B%EF%BC%88%E5%8D%8A%E8%BA%AB%EF%BC%89",
+  9: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%BF%83%E5%A4%96%E6%8C%89%E6%91%A9%E7%B7%B4%E7%BF%92%E6%A8%A1%E5%9E%8B-%E5%85%A7%E5%BB%BA%E7%87%88%E8%99%9F%E9%A1%AF%E7%A4%BA%EF%BC%88%E5%8D%8A%E8%BA%AB%EF%BC%89",
+  10: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E7%95%B0%E7%89%A9%E5%93%BD%E5%A1%9E%E7%B7%B4%E7%BF%92%E6%A8%A1%E5%9E%8B",
+  11: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E9%9D%9C%E8%84%88%E6%B3%A8%E5%B0%84%E8%A8%93%E7%B7%B4%E6%89%8B%E8%87%82%E6%A8%A1%E5%9E%8B",
+  12: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E9%9D%9C%E8%84%88%E6%B3%A8%E5%B0%84%E6%89%8B%E8%87%82",
+  13: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E9%9D%9C%E8%84%88%E6%B3%A8%E5%B0%84%E7%B7%B4%E7%BF%92%E5%A2%8A",
+  14: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E7%94%B7%E6%80%A7%E5%B0%8E%E5%B0%BF%E6%A8%A1%E5%9E%8B",
+  15: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%A5%B3%E6%80%A7%E5%B0%8E%E5%B0%BF%E6%A8%A1%E5%9E%8B",
+  16: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E9%80%8F%E6%98%8E%E5%A5%B3%E6%80%A7%E5%B0%8E%E5%B0%BF%E6%A8%A1%E5%9E%8B",
+  17: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%9B%B0%E9%9B%A3%E6%B0%A3%E9%81%93%E8%99%95%E7%90%86%E8%A8%93%E7%B7%B4%E6%A8%A1%E5%9E%8B",
+  18: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E6%8F%92%E7%AE%A1%E5%AE%89%E5%A6%AE",
+  19: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%A4%9A%E5%8A%9F%E8%83%BDCPR%E7%B7%B4%E7%BF%92%E7%90%83",
+  20: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E8%A4%A5%E7%98%A1%E6%B8%85%E7%90%86%E8%88%87%E6%95%B7%E8%97%A5%E8%A8%93%E7%B7%B4%E6%A8%A1%E5%9E%8B",
+  21: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E6%B0%A3%E8%83%B8%E8%A8%93%E7%B7%B4%E6%A8%A1%E5%9E%8B",
+  22: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E4%B8%8B%E8%82%A2%E7%A9%BF%E5%88%BA%E6%A8%A1%E6%93%AC%E8%A8%93%E7%B7%B4%E6%A8%A1%E5%9E%8B",
+  23: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%8D%8A%E8%BA%AB%E4%B8%AD%E5%A4%AE%E9%9D%9C%E8%84%88%E5%B0%8E%E7%AE%A1%E6%8F%92%E7%AE%A1%E8%A8%93%E7%B7%B4",
+  24: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%A9%A6%E7%A7%91%E8%A8%93%E7%B7%B4%E6%A8%A1%E5%9E%8B",
+  25: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E4%B9%B3%E6%88%BF%E8%87%AA%E6%88%91%E6%AA%A2%E6%9F%A5%E6%A8%A1%E5%9E%8B",
+  26: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E6%B3%8C%E5%B0%BF%E7%A7%91%E6%94%9D%E8%AD%B7%E8%85%BA%E6%AA%A2%E6%9F%A5%E6%A8%A1%E5%9E%8B",
+  27: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%85%A8%E8%BA%AB%E9%AA%A8%E9%AA%BC%E6%A8%A1%E5%9E%8B",
+  28: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E8%BF%B7%E4%BD%A0%E7%94%B7%E5%A5%B3%E4%BA%BA%E9%AB%94%E6%A8%A1%E5%9E%8B",
+  29: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%BF%83%E8%87%9F%E6%A8%A1%E5%9E%8B",
+  30: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E6%95%B8%E7%B2%92%E6%A9%9F",
+  31: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%A4%A7%E5%9E%8B%E7%89%99%E9%BD%92%E6%A8%A1%E5%9E%8B",
+  32: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%8D%8A%E8%BA%AB%E9%9D%9C%E8%84%88%E6%B3%A8%E5%B0%84%E6%A8%A1%E5%9E%8B",
+  33: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E8%85%B0%E6%A4%8E%E7%A9%BF%E5%88%BA%E6%A8%A1%E5%9E%8B",
+  34: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E8%85%B9%E9%83%A8%E6%89%A3%E8%A8%BA%E8%88%87%E8%85%B9%E8%85%94%E7%A9%BF%E5%88%BA%E6%A8%A1%E5%9E%8B",
+  35: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E8%82%8C%E8%82%89%E6%B3%A8%E5%B0%84%E6%8A%80%E8%A1%93%E6%A8%99%E6%BA%96%E7%9B%92",
+  36: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E8%83%B0%E5%B3%B6%E7%B4%A0%E7%9A%AE%E4%B8%8B%E6%B3%A8%E5%B0%84%E6%8A%80%E8%A1%93%E6%A8%99%E6%BA%96%E7%9B%92",
+  37: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E9%BC%BB%E8%83%83%E7%AE%A1%E7%81%8C%E9%A3%9F%E5%8F%8A%E8%AD%B7%E7%90%86%E6%8A%80%E8%A1%93%E6%A8%99%E6%BA%96%E7%9B%A4",
+  38: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%B0%8E%E5%B0%BF%E8%AD%B7%E7%90%86%E6%8A%80%E8%A1%93%E6%A8%99%E6%BA%96%E7%9B%A4",
+  39: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E9%9D%9C%E8%84%88%E6%B3%A8%E5%B0%84%E6%8A%80%E8%A1%93%E6%A8%99%E6%BA%96%E7%9B%A4",
+  40: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E9%9D%9C%E8%84%88%E6%8E%A1%E8%A1%80%E6%8A%80%E8%A1%93%E6%A8%99%E6%BA%96%E7%9B%92",
+  41: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=CVP%E7%85%A7%E8%AD%B7%E6%8A%80%E8%A1%93%E6%A8%99%E6%BA%96%E7%9B%A4",
+  42: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E6%8A%BD%E7%97%B0%E6%8A%80%E8%A1%93%E6%A8%99%E6%BA%96%E7%9B%A4",
+  43: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E9%9B%99%E5%90%91%E8%81%BD%E8%A8%BA%E5%99%A8",
+  44: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=24%E5%90%8B%E5%AC%B0%E5%85%92%E6%A8%A1%E5%9E%8B",
+  45: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=AED%20%E8%A8%93%E7%B7%B4%E5%99%A8",
+  46: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E9%9B%BB%E5%8B%95%E9%9D%9C%E8%84%88%E6%B3%A8%E5%B0%84%E6%89%8B%E8%87%82%E6%A8%A1%E5%9E%8B",
+  47: "https://docs.google.com/forms/d/e/1FAIpQLSe6kBJddsBD2eAIK2RVClDEk9et-Qz5s458fVhcq78-c-uGWA/viewform?usp=pp_url&entry.1274085700=%E5%B0%88%E6%A5%AD%E6%95%99%E5%AD%B8%E9%BA%A5%E5%85%8B%E9%A2%A8-%E6%93%B4%E9%9F%B3%E6%A9%9F",
+};
+
+
+// 追蹤頁面進入
+track('pageview', '進入推薦系統');
+
+document.getElementById('quickTags').innerHTML=QUICK_TAGS.map(t=>
+  `<span class="tag" onclick="useTag('${t}')">${t}</span>`
+).join('');
+document.getElementById('queryInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSearch();}
+});
+
+
+let recognition=null,isRecording=false;
+function setStatus(msg,isErr){
+  const el=document.getElementById('voiceStatus');
+  el.textContent=msg;
+  el.className='voice-status'+(isErr?' err':'');
+}
+function toggleVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){setStatus('⚠️ 請改用 Chrome 瀏覽器',true);return;}
+  if(isRecording){try{recognition.stop();}catch(e){}return;}
+  recognition=new SR();
+  recognition.lang='zh-TW';
+  recognition.interimResults=true;
+  recognition.continuous=false;
+  recognition.maxAlternatives=1;
+  recognition.onstart=()=>{
+    isRecording=true;
+    document.getElementById('voiceBtn').classList.add('recording');
+    document.getElementById('voiceBtn').textContent='🔴 錄音中…';
+    setStatus('正在聆聽，請說出需求…');
+  };
+  recognition.onresult=(e)=>{
+    let final='',interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal)final+=t;else interim+=t;
+    }
+    const text=(final||interim).trim();
+    if(text)document.getElementById('queryInput').value=text;
+    if(final)setStatus('✅ 辨識完成：'+final);
+  };
+  recognition.onend=()=>{
+    isRecording=false;
+    document.getElementById('voiceBtn').classList.remove('recording');
+    document.getElementById('voiceBtn').textContent='🎤 語音輸入';
+    const val=document.getElementById('queryInput').value.trim();
+    if(val){setStatus('');setTimeout(doSearch,300);}
+    else setStatus('未偵測到語音，請再試一次');
+  };
+  recognition.onerror=(e)=>{
+    isRecording=false;
+    document.getElementById('voiceBtn').classList.remove('recording');
+    document.getElementById('voiceBtn').textContent='🎤 語音輸入';
+    const msgs={'not-allowed':'請允許麥克風權限後重試','no-speech':'未偵測到語音，請靠近麥克風','network':'網路問題，語音辨識失敗'};
+    setStatus('⚠️'+(msgs[e.error]||'語音辨識失敗，請手動輸入'),true);
+  };
+  try{recognition.start();}catch(e){setStatus('⚠️ 語音啟動失敗',true);}
+}
+
+
+function scoreTools(query){
+  const q=query.toLowerCase().replace(/[，。！？、\s]+/g,' ').trim();
+  const words=q.split(/\s+/).filter(Boolean);
+  const fullQ=q.replace(/[\s\/／\-]/g,'');
+
+  // 先檢查是否完全匹配搜尋分類（快速標籤直接命中）
+  for(const [cat,map] of Object.entries(SEARCH_MAP)){
+    const catKey=cat.toLowerCase().replace(/[\s\/／\-]/g,'');
+    if(fullQ===catKey||fullQ.includes(catKey)||catKey.includes(fullQ)||
+       words.some(w=>w.length>=2&&cat.toLowerCase().includes(w))){
+      return {
+        matchedCategory:cat,
+        primary:map.primary.map(id=>TOOLS.find(t=>t.id===id)).filter(Boolean),
+        secondary:map.secondary.map(id=>TOOLS.find(t=>t.id===id)).filter(Boolean),
+      };
+    }
+  }
+
+  // 關鍵字模糊比對
+  const scored=TOOLS.map(tool=>{
+    let score=0;
+    const allKeys=tool.keys.map(k=>k.toLowerCase());
+    const nameLC=tool.name.toLowerCase();
+    const descLC=tool.desc.toLowerCase();
+    allKeys.forEach(key=>{
+      if(fullQ.includes(key)||q.includes(key))score+=3;
+      words.forEach(w=>{if(w.length>=2&&(w.includes(key)||key.includes(w)))score+=2;});
+    });
+    words.forEach(w=>{
+      if(w.length>=2&&nameLC.includes(w))score+=4;
+      if(w.length>=2&&descLC.includes(w))score+=1;
+    });
+    if(nameLC.includes(fullQ)&&fullQ.length>=2)score+=5;
+    return{tool,score};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+
+  if(!scored.length)return null;
+  return{
+    matchedCategory:null,
+    primary:scored.slice(0,4).map(x=>x.tool),
+    secondary:scored.slice(4,7).map(x=>x.tool),
+  };
+}
+
+function doSearch(){
+  const query=document.getElementById('queryInput').value.trim();
+  if(!query)return;
+  track('search', query); // 追蹤搜尋關鍵字
+  const result=scoreTools(query);
+  const box=document.getElementById('resultsBox');
+
+  if(!result||!result.primary.length){
+    box.innerHTML=`<div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <div>找不到「${esc(query)}」相關教具</div>
+      <div style="font-size:.8rem;margin-top:6px">請嘗試其他關鍵字，或聯繫教室管理員</div>
+      <div style="font-size:.8rem">📞 分機 6301</div>
+      <button class="btn-reset" onclick="resetSearch()">🔄 重新搜尋</button>
+    </div>`;
+    box.style.display='block';
+    box.scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+
+  const {matchedCategory,primary,secondary}=result;
+  const total=primary.length+secondary.length;
+  const roomNames=[...new Set(primary.map(t=>ROOMS[t.room].name))].join('、');
+  const catLabel=matchedCategory?`「${matchedCategory}」`:`「${query}」`;
+
+  let summary=matchedCategory
+    ?`已找到 <strong>${catLabel}</strong> 相關教具共 <strong>${total}</strong> 項，主要位於 <strong>${roomNames}</strong>。`
+    :`根據需求 ${catLabel}，找到 <strong>${total}</strong> 項相關教具，主要位於 <strong>${roomNames}</strong>。`;
+
+  let html=`<div class="summary-box"><div class="summary-header">🔍 搜尋結果</div>${summary}歡迎點擊「填寫外借申請表」辦理借用，點擊後教具將自動勾選。</div>`;
+  html+=`<div class="section-title">✅ 最推薦教具（${primary.length} 組）</div><div class="card-grid">`;
+  primary.forEach(t=>{html+=toolCard(t,false);});
+  html+=`</div>`;
+  if(secondary.length){
+    html+=`<div class="section-title">🔄 其他相關教具（${secondary.length} 組）</div><div class="card-grid">`;
+    secondary.forEach(t=>{html+=toolCard(t,true);});
+    html+=`</div>`;
+  }
+  html+=`<div style="text-align:center"><button class="btn-reset" onclick="resetSearch()">🔄 重新搜尋</button></div>`;
+
+  box.innerHTML=html;
+  box.style.display='block';
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function toolCard(t,secondary){
+  const room=ROOMS[t.room];
+  const cls=secondary?'tool-card secondary':`tool-card ${t.room}`;
+  const noteHtml=t.note?`<div class="tool-note">📌 ${esc(t.note)}</div>`:'';
+  // 使用教具專屬預填連結，讓借用表單自動勾選該教具
+  const borrowUrl=PREFILL_URLS[t.id]||FORM_URL;
+  return `<div class="${cls}">
+    <span class="room-badge ${t.room}">🏠 ${room.name}｜${room.desc}</span>
+    <div class="tool-name">${t.emoji} ${esc(t.name)}</div>
+    <div class="tool-desc">${esc(t.desc)}</div>
+    ${noteHtml}
+    <div class="tool-tags">${t.tags.map(tag=>`<span class="tool-tag">${esc(tag)}</span>`).join('')}</div>
+    <a class="btn-borrow" href="${borrowUrl}" target="_blank">📋 填寫外借申請表</a>
+  </div>`;
+}
+
+function resetSearch(){
+  document.getElementById('queryInput').value='';
+  document.getElementById('resultsBox').style.display='none';
+  setStatus('點擊後開始說話（需Chrome瀏覽器）');
+  document.getElementById('queryInput').focus();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function useTag(t){
+  document.getElementById('queryInput').value=t;
+  track('tag_click', t); // 追蹤標籤點擊
+  doSearch();
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+</script>
+</body>
+</html>
